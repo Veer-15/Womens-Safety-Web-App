@@ -30,27 +30,7 @@ class ResilientDB {
     };
     this.users.set(demoUser.id, demoUser);
 
-    // Seed 2 Emergency Contacts for the demo user
-    const contact1: EmergencyContact = {
-      id: 'contact_01',
-      userId: demoUserId,
-      name: 'Sunita Sharma',
-      phone: '+91 98111 22334',
-      relation: 'Parent',
-      isPrimary: true,
-      createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
-    };
-    const contact2: EmergencyContact = {
-      id: 'contact_02',
-      userId: demoUserId,
-      name: 'Rohan Sharma',
-      phone: '+91 98222 33445',
-      relation: 'Sibling',
-      isPrimary: false,
-      createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-    };
-    this.contacts.set(contact1.id, contact1);
-    this.contacts.set(contact2.id, contact2);
+    // Removed demo contacts to comply with security requirements
 
     // Seed an initial SOS history event (Resolved)
     const pastSos: SOSHistory = {
@@ -136,7 +116,7 @@ class ResilientDB {
   getContactsByUserId(userId: string): EmergencyContact[] {
     return Array.from(this.contacts.values())
       .filter(c => c.userId === userId)
-      .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
+      .sort((a, b) => a.priority - b.priority);
   }
 
   getContactById(id: string): EmergencyContact | undefined {
@@ -144,15 +124,6 @@ class ResilientDB {
   }
 
   addContact(contact: EmergencyContact): EmergencyContact {
-    if (contact.isPrimary) {
-      // Clear previous primary
-      for (const c of this.contacts.values()) {
-        if (c.userId === contact.userId && c.isPrimary) {
-          c.isPrimary = false;
-          this.contacts.set(c.id, c);
-        }
-      }
-    }
     this.contacts.set(contact.id, contact);
     return contact;
   }
@@ -161,16 +132,7 @@ class ResilientDB {
     const existing = this.contacts.get(id);
     if (!existing) return undefined;
 
-    if (update.isPrimary) {
-      for (const c of this.contacts.values()) {
-        if (c.userId === existing.userId && c.id !== id && c.isPrimary) {
-          c.isPrimary = false;
-          this.contacts.set(c.id, c);
-        }
-      }
-    }
-
-    const updated = { ...existing, ...update };
+    const updated = { ...existing, ...update, updatedAt: new Date().toISOString() };
     this.contacts.set(id, updated);
     return updated;
   }

@@ -25,7 +25,8 @@ export const ContactsPage: React.FC = () => {
   const [name, setName] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
   const [relation, setRelation] = useState<ContactRelation>('Parent');
-  const [isPrimary, setIsPrimary] = useState<boolean>(false);
+  const [priority, setPriority] = useState<number>(1);
+  const [isActive, setIsActive] = useState<boolean>(true);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
 
@@ -59,7 +60,8 @@ export const ContactsPage: React.FC = () => {
     setName('');
     setPhone('+91 ');
     setRelation('Parent');
-    setIsPrimary(contacts.length === 0);
+    setPriority(contacts.length + 1);
+    setIsActive(true);
     setFormError(null);
     setModalOpen(true);
   };
@@ -69,7 +71,8 @@ export const ContactsPage: React.FC = () => {
     setName(c.name);
     setPhone(c.phone);
     setRelation(c.relation);
-    setIsPrimary(c.isPrimary);
+    setPriority(c.priority);
+    setIsActive(c.isActive);
     setFormError(null);
     setModalOpen(true);
   };
@@ -90,14 +93,16 @@ export const ContactsPage: React.FC = () => {
           name: name.trim(),
           phone: phone.trim(),
           relation,
-          isPrimary,
+          priority,
+          isActive,
         });
       } else {
         await contactService.addContact({
           name: name.trim(),
           phone: phone.trim(),
           relation,
-          isPrimary,
+          priority,
+          isActive,
         });
       }
       setModalOpen(false);
@@ -119,6 +124,15 @@ export const ContactsPage: React.FC = () => {
       fetchContacts();
     } catch (err) {
       console.error('Delete contact failed:', err);
+    }
+  };
+
+  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+    try {
+      await contactService.updateStatus(id, !currentStatus);
+      fetchContacts();
+    } catch (err) {
+      console.error('Toggle status failed:', err);
     }
   };
 
@@ -191,9 +205,9 @@ export const ContactsPage: React.FC = () => {
             <div
               key={contact.id}
               className={`bg-white rounded-2xl p-5 border transition-all flex flex-col justify-between ${
-                contact.isPrimary
-                  ? 'border-rose-300 ring-2 ring-rose-100 shadow-sm'
-                  : 'border-slate-200 shadow-xs'
+                contact.isActive
+                  ? 'border-slate-200 shadow-xs'
+                  : 'border-slate-200 shadow-xs opacity-60 bg-slate-50'
               }`}
             >
               <div>
@@ -201,15 +215,15 @@ export const ContactsPage: React.FC = () => {
                   <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
                     {contact.relation}
                   </span>
-                  {contact.isPrimary && (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
-                      <Star className="w-3 h-3 fill-rose-500 text-rose-500" />
-                      Primary Contact
-                    </span>
-                  )}
+                  <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${contact.isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+                    {contact.isActive ? 'Active' : 'Inactive'}
+                  </span>
                 </div>
 
-                <h3 className="font-bold text-base text-slate-900">{contact.name}</h3>
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-bold text-base text-slate-900">{contact.name}</h3>
+                  <span className="text-[10px] text-slate-500 font-bold bg-slate-100 px-2 py-0.5 rounded-lg">P{contact.priority}</span>
+                </div>
 
                 <div className="flex items-center gap-2 mt-2 text-slate-600 text-xs">
                   <Phone className="w-3.5 h-3.5 text-rose-600" />
@@ -227,6 +241,13 @@ export const ContactsPage: React.FC = () => {
                 </a>
 
                 <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleToggleStatus(contact.id, contact.isActive)}
+                    className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors text-xs font-medium"
+                    title={contact.isActive ? "Disable Contact" : "Enable Contact"}
+                  >
+                    {contact.isActive ? 'Disable' : 'Enable'}
+                  </button>
                   <button
                     onClick={() => openEditModal(contact)}
                     className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
@@ -316,18 +337,33 @@ export const ContactsPage: React.FC = () => {
                 </select>
               </div>
 
-              <div className="pt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Priority <span className="text-rose-500">*</span>
+                  </label>
                   <input
-                    type="checkbox"
-                    checked={isPrimary}
-                    onChange={(e) => setIsPrimary(e.target.checked)}
-                    className="w-4 h-4 text-rose-600 rounded-sm border-slate-300 focus:ring-rose-500"
+                    type="number"
+                    min="1"
+                    required
+                    value={priority}
+                    onChange={(e) => setPriority(parseInt(e.target.value) || 1)}
+                    className="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:outline-rose-500 focus:ring-1 focus:ring-rose-500"
                   />
-                  <span className="text-xs text-slate-700 font-medium">
-                    Mark as Primary Emergency Contact
-                  </span>
-                </label>
+                </div>
+                <div className="flex items-center justify-center pt-5">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={(e) => setIsActive(e.target.checked)}
+                      className="w-4 h-4 text-rose-600 rounded-sm border-slate-300 focus:ring-rose-500"
+                    />
+                    <span className="text-xs text-slate-700 font-medium">
+                      Active
+                    </span>
+                  </label>
+                </div>
               </div>
 
               <div className="pt-4 flex gap-2">

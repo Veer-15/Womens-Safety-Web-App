@@ -77,7 +77,8 @@ export const contactService = {
     name: string;
     phone: string;
     relation: string;
-    isPrimary?: boolean;
+    priority?: number;
+    isActive?: boolean;
   }) {
     const res = await api.post<{ message: string; contact: EmergencyContact }>('/contacts', data);
     return res.data.contact;
@@ -89,7 +90,8 @@ export const contactService = {
       name?: string;
       phone?: string;
       relation?: string;
-      isPrimary?: boolean;
+      priority?: number;
+      isActive?: boolean;
     }
   ) {
     const res = await api.put<{ message: string; contact: EmergencyContact }>(`/contacts/${id}`, data);
@@ -99,6 +101,11 @@ export const contactService = {
   async deleteContact(id: string) {
     const res = await api.delete<{ message: string; deletedId: string }>(`/contacts/${id}`);
     return res.data;
+  },
+
+  async updateStatus(id: string, isActive: boolean) {
+    const res = await api.patch<{ message: string; contact: EmergencyContact }>(`/contacts/${id}/status`, { isActive });
+    return res.data.contact;
   },
 };
 

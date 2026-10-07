@@ -19,8 +19,10 @@ export interface EmergencyContact {
   name: string;
   phone: string;
   relation: ContactRelation;
-  isPrimary: boolean;
+  priority: number;
+  isActive: boolean;
   createdAt: string;
+  updatedAt?: string;
 }
 
 export type SOSStatus = 'TRIGGERED' | 'RESOLVED' | 'FALSE_ALARM';

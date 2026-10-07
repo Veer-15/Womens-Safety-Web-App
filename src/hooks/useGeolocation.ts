@@ -7,6 +7,7 @@ export interface GeolocationState {
   status: 'active' | 'fallback' | 'denied' | 'loading';
   error: string | null;
   lastUpdated: Date | null;
+  mapsUrl: string;
 }
 
 // Default benchmark center: Connaught Place, New Delhi (metro safety hub)
@@ -14,6 +15,7 @@ const DEFAULT_COORDINATES = {
   latitude: 28.6139,
   longitude: 77.2090,
   accuracy: 15,
+  mapsUrl: 'https://www.google.com/maps?q=28.6139,77.2090',
 };
 
 export function useGeolocation() {
@@ -32,6 +34,7 @@ export function useGeolocation() {
       status: 'active',
       error: null,
       lastUpdated: new Date(position.timestamp),
+      mapsUrl: `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`,
     });
   }, []);
 

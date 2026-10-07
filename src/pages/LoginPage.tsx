@@ -15,7 +15,7 @@ import { SakhiLogo } from '../components/SakhiLogo.tsx';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, signup, demoLogin, isLoading } = useAuth();
+  const { login, signup, demoLogin, isLoading, isAuthenticated } = useAuth();
 
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [name, setName] = useState<string>('');
@@ -23,6 +23,12 @@ export const LoginPage: React.FC = () => {
   const [phone, setPhone] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +40,7 @@ export const LoginPage: React.FC = () => {
       } else {
         await signup(name, email, phone, password);
       }
-      navigate('/');
+      navigate('/dashboard', { replace: true });
     } catch (err: any) {
       setError(err.response?.data?.error || 'Authentication failed. Please verify details.');
     }
@@ -44,7 +50,7 @@ export const LoginPage: React.FC = () => {
     setError(null);
     try {
       await demoLogin();
-      navigate('/');
+      navigate('/dashboard', { replace: true });
     } catch (err: any) {
       setError('Demo login failed. Starting fresh session.');
     }

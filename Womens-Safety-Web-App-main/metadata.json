@@ -1,6 +1,0 @@
-{
-  "name": "Sakhi - Women's Safety & Companionship",
-  "description": "Smart safety companion offering one-tap SOS alerting with live GPS tracking, verified nearby amenities, emergency helplines, transport assistance, and grounded AI assistance.",
-  "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

@@ -14,6 +14,8 @@ import { IncidentsPage } from './pages/IncidentsPage.tsx';
 import { LoginPage } from './pages/LoginPage.tsx';
 import { LandingPage } from './pages/LandingPage.tsx';
 
+import { ProtectedRoute } from './components/ProtectedRoute.tsx';
+
 const AppContent: React.FC = () => {
   const geoState = useGeolocation();
   const [globalSosOpen, setGlobalSosOpen] = useState<boolean>(false);
@@ -32,13 +34,34 @@ const AppContent: React.FC = () => {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/landing" element={<LandingPage />} />
-          <Route path="/dashboard" element={<Dashboard geoState={geoState} />} />
-          <Route path="/app" element={<Dashboard geoState={geoState} />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard geoState={geoState} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/app"
+            element={
+              <ProtectedRoute>
+                <Dashboard geoState={geoState} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contacts"
+            element={
+              <ProtectedRoute>
+                <ContactsPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/amenities" element={<AmenitiesPage geoState={geoState} />} />
           <Route path="/transport" element={<TransportPage geoState={geoState} />} />
           <Route path="/companion" element={<CompanionPage geoState={geoState} />} />
-          <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/incidents" element={<IncidentsPage geoState={geoState} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
